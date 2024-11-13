@@ -1,58 +1,58 @@
-#include <TFT_eSPI.h>  // Library for working with T-Display ESP32 display
-#include <WiFi.h>      // Library for working with Wi-Fi
-#include <HTTPClient.h>// Library for sending HTTP requests
-#include <ArduinoJson.h>// Library for working with JSON
-#include <time.h>      // Library for working with time
-#include "config.h"    // config.h file contains Wi-Fi configuration and API_KEY for OpenWeather
+#include <TFT_eSPI.h>  // Бібліотека для роботи з дисплеєм T-Display ESP32
+#include <WiFi.h>      // Бібліотека для роботи з Wi-Fi
+#include <HTTPClient.h>// Бібліотека для відправки HTTP запитів
+#include <ArduinoJson.h>// Бібліотека для роботи з JSON
+#include <time.h>      // Бібліотека для роботи з часом
+#include "config.h"    // Файл config.h містить налаштування Wi-Fi та API_KEY для OpenWeather
 
-TFT_eSPI tft = TFT_eSPI(); // Initialize the display
+TFT_eSPI tft = TFT_eSPI(); // Ініціалізація дисплею
 
 const String apiUrl = "http://api.openweathermap.org/data/2.5/weather?q=Kyiv,UA&units=metric&appid=" + String(API_KEY);
-// URL for getting weather data through the OpenWeather API for Kyiv, UA
+// URL для отримання даних про погоду через OpenWeather API для Києва, Україна
 
-// Variables for storing the received weather data
-float currentTemperature = 0.0;    // Current temperature
-float feelsLikeTemperature = 0.0;  // Temperature that the person feels
-float minTemperature = 0.0;       // Minimum temperature for the day
-float maxTemperature = 0.0;       // Maximum temperature for the day
-float windSpeed = 0.0;            // Wind speed in m/s
-String windDirection = "Unknown"; // Wind direction
-float pressure = 0.0;             // Atmospheric pressure
-const char* currentWeatherDescription = "Unknown"; // Description of the current weather
-float precipitation = 0.0;        // Amount of precipitation
-float humidity = 0.0;             // Humidity
+// Змінні для збереження отриманих даних про погоду
+float currentTemperature = 0.0;    // Поточна температура
+float feelsLikeTemperature = 0.0;  // Температура, яку відчуває людина
+float minTemperature = 0.0;       // Мінімальна температура дня
+float maxTemperature = 0.0;       // Максимальна температура дня
+float windSpeed = 0.0;            // Швидкість вітру в м/с
+String windDirection = "Unknown"; // Напрямок вітру
+float pressure = 0.0;             // Атмосферний тиск
+const char* currentWeatherDescription = "Unknown"; // Опис поточної погоди
+float precipitation = 0.0;        // Кількість опадів
+float humidity = 0.0;             // Вологість
 
-unsigned long lastWeatherUpdate = 0; // Time of the last weather update
-const unsigned long weatherUpdateInterval = 300000; // Interval between weather updates (5 minutes)
+unsigned long lastWeatherUpdate = 0; // Час останнього оновлення погоди
+const unsigned long weatherUpdateInterval = 300000; // Інтервал між оновленнями погоди (5 хвилин)
 
 // Функція для виведення даних на дисплей T-Display ESP32
 void displayDataOnTFT() {
-    tft.fillScreen(TFT_BLACK);  // Clear the display
+    tft.fillScreen(TFT_BLACK);  // Очищаємо екран дисплею
 
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set white text color on black background
-    tft.setTextSize(2);  // Text size
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Встановлюємо білий колір тексту на чорному фоні
+    tft.setTextSize(2);  // Розмір тексту
 
     struct tm timeinfo;
-    if (getLocalTime(&timeinfo)) {  // Check if the time is available
+    if (getLocalTime(&timeinfo)) {  // Перевіряємо, чи доступний час
         const char* daysOfWeek[] = {"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
-        int dayIndex = (timeinfo.tm_wday + 6) % 7;  // Determine the day of the week
-        tft.setCursor(0, 0);  // Set the cursor to the top left corner
+        int dayIndex = (timeinfo.tm_wday + 6) % 7;  // Визначаємо день тижня
+        tft.setCursor(0, 0);  // Встановлюємо курсор у верхній лівий кут
         tft.printf("%02d:%02d:%02d %s %02d/%02d/%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, daysOfWeek[dayIndex], timeinfo.tm_mday, timeinfo.tm_mon + 1, (timeinfo.tm_year + 1900) % 100);
-        tft.setCursor(0, 20);  // Set the cursor 30 pixels down
-        tft.printf("Temp: %.1f C", currentTemperature);  // Display the current temperature
-        tft.setCursor(0, 40);  // Set the cursor 50 pixels down
-        tft.printf("Feels: %.1f C", feelsLikeTemperature);  // Display the feels-like temperature
-        tft.setCursor(0, 60);  // Set the cursor 70 pixels down
-        tft.printf("H: %.1f C L: %.1f C", maxTemperature, minTemperature);  // Minimum and maximum temperature
-        tft.setCursor(0, 80);  // Set the cursor 90 pixels down
-        tft.printf("Humidity: %.1f%%", humidity);  // Display the humidity
-        tft.setCursor(0, 100);  // Set the cursor 110 pixels down
-        tft.printf("Pressure: %.1f hPa", pressure);  // Display the pressure
+        tft.setCursor(0, 20);  // Встановлюємо курсор на 30 пікселів нижче
+        tft.printf("Temp: %.1f C", currentTemperature);  // Виводимо поточну температуру
+        tft.setCursor(0, 40);  // Встановлюємо курсор на 50 пікселів нижче
+        tft.printf("Feels: %.1f C", feelsLikeTemperature);  // Виводимо температуру, яку відчуває людина
+        tft.setCursor(0, 60);  // Встановлюємо курсор на 70 пікселів нижче
+        tft.printf("H: %.1f C L: %.1f C", maxTemperature, minTemperature);  // Мінімальна та максимальна температура
+        tft.setCursor(0, 80);  // Встановлюємо курсор на 90 пікселів нижче
+        tft.printf("Humidity: %.1f%%", humidity);  // Виводимо вологість
+        tft.setCursor(0, 100);  // Встановлюємо курсор на 110 пікселів нижче
+        tft.printf("Pressure: %.1f hPa", pressure);  // Виводимо тиск
 
-        // Convert wind speed from m/s to km/h
-        float windSpeedKmh = windSpeed * 3.6;  // Conversion
-        tft.setCursor(0, 120);  // Set the cursor 130 pixels down
-        tft.printf("Wind: %.1f km/h %s", windSpeedKmh, windDirection.c_str());  // Display the wind speed in km/h and direction
+        // Перетворюємо швидкість вітру з м/с в км/год
+        float windSpeedKmh = windSpeed * 3.6;  // Переведення
+        tft.setCursor(0, 120);  // Встановлюємо курсор на 130 пікселів нижче
+        tft.printf("Wind: %.1f km/h %s", windSpeedKmh, windDirection.c_str());  // Виводимо швидкість вітру в км/год та напрямок
     } else {
         Serial.println("Using internal timer due to lack of connection.");
     }
@@ -60,19 +60,19 @@ void displayDataOnTFT() {
 
 // Функція для отримання даних про погоду
 void fetchWeather() {
-    if (WiFi.status() == WL_CONNECTED) {  // Check if there is a Wi-Fi connection
-        HTTPClient http;  // Initialize the HTTP client
-        http.begin(apiUrl);  // Set the connection to the API
+    if (WiFi.status() == WL_CONNECTED) {  // Перевіряємо, чи є Wi-Fi підключення
+        HTTPClient http;  // Ініціалізуємо HTTP клієнт
+        http.begin(apiUrl);  // Встановлюємо з'єднання з API
 
-        int httpCode = http.GET();  // Perform the GET request
-        if (httpCode > 0) {  // If the response code is greater than 0, the request was successful
-            String payload = http.getString();  // Get the response from the server
-            Serial.println("Weather data: " + payload);  // Print the weather data
+        int httpCode = http.GET();  // Виконуємо GET запит
+        if (httpCode > 0) {  // Якщо код відповіді більший за 0, запит був успішний
+            String payload = http.getString();  // Отримуємо відповідь від сервера
+            Serial.println("Weather data: " + payload);  // Виводимо дані погоди
 
-            DynamicJsonDocument doc(2048);  // Create a JSON document for parsing the response
-            deserializeJson(doc, payload);  // Parse the JSON
+            DynamicJsonDocument doc(2048);  // Створюємо JSON документ для парсингу відповіді
+            deserializeJson(doc, payload);  // Парсимо JSON
 
-            // Get the values from the JSON and store them in variables
+            // Отримуємо значення з JSON та зберігаємо їх у змінні
             currentTemperature = doc["main"]["temp"];
             feelsLikeTemperature = doc["main"]["feels_like"];
             minTemperature = doc["main"]["temp_min"];
@@ -81,7 +81,7 @@ void fetchWeather() {
             windSpeed = doc["wind"]["speed"];
             humidity = doc["main"]["humidity"];
 
-            // Determine the wind direction based on degrees
+            // Визначаємо напрямок вітру за допомогою градусів
             float windDeg = doc["wind"]["deg"];
             if (windDeg >= 0 && windDeg < 45) windDirection = "North";
             else if (windDeg >= 45 && windDeg < 90) windDirection = "East";
@@ -91,79 +91,50 @@ void fetchWeather() {
             else if (windDeg >= 225 && windDeg < 270) windDirection = "West";
             else if (windDeg >= 270 && windDeg < 315) windDirection = "N";
             else windDirection = "North";
-
-            // Get the amount of precipitation, if any
-            if (doc.containsKey("rain")) {
-                precipitation = doc["rain"]["1h"];
-            } else {
-                precipitation = 0;
-            }
-
-            // Weather description
-            const char* weatherId = doc["weather"][0]["description"];
-            if (strcmp(weatherId, "few clouds") == 0) {
-                currentWeatherDescription = "few clouds";
-            } else if (strcmp(weatherId, "clear sky") == 0) {
-                currentWeatherDescription = "clear sky";
-            } else if (strcmp(weatherId, "overcast clouds") == 0) {
-                currentWeatherDescription = "overcast clouds";
-            } else if (strcmp(weatherId, "light rain") == 0) {
-                currentWeatherDescription = "light rain";
-            } else if (strcmp(weatherId, "moderate rain") == 0) {
-                currentWeatherDescription = "moderate rain";
-            } else if (strcmp(weatherId, "heavy rain") == 0) {
-                currentWeatherDescription = "heavy rain";
-            } else if (strcmp(weatherId, "scattered clouds") == 0) {
-                currentWeatherDescription = "scattered clouds";
-            } else if (strcmp(weatherId, "broken clouds") == 0) {
-                currentWeatherDescription = "broken clouds";
-            } else {
-                currentWeatherDescription = "other";
-            }
         } else {
-            Serial.println("Failed to get weather data.");  // If the request failed
+            Serial.println("Failed to get weather data.");  // Якщо запит не вдалося виконати
         }
 
-        http.end();  // Close the HTTP connection
+        http.end();  // Закриваємо HTTP з'єднання
     }
 }
 
 void setup() {
-    Serial.begin(115200);  // Initialize the serial monitor for output
-    WiFi.begin(ssid, password);  // Connect to the Wi-Fi network using the settings from the config.h file
+    Serial.begin(115200);  // Ініціалізація серійного монітора для виведення інформації
+    WiFi.begin(ssid, password);  // Підключаємося до Wi-Fi мережі за налаштуваннями з файлу config.h
 
-    // Wait until we connect to Wi-Fi
+    // Чекаємо, поки підключимося до Wi-Fi
     while (WiFi.status() != WL_CONNECTED) { 
         delay(500);
-        Serial.print("."); // While not connected, print dots
+        Serial.print("."); // Поки не підключено, виводимо крапки
     }
-    Serial.println(" WiFi connected.");  // Print a message when the connection is established
+    Serial.println(" WiFi connected.");  // Повідомлення про успішне підключення
 
-    // Set the time using the NTP server
+    // Налаштовуємо час через NTP сервер
     configTime(2 * 3600, 0, "pool.ntp.org", "time.nist.gov"); 
 
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {  // Get the local time
+    if (!getLocalTime(&timeinfo)) {  // Отримуємо локальний час
         Serial.println("Failed to get time from the internet");
         return;
     }
-    Serial.println("Time synchronized with NTP server");  // Message about successful time synchronization
+    Serial.println("Time synchronized with NTP server");  // Повідомлення про синхронізацію часу
 
-    // Initialize the T-Display ESP32 display
+    // Ініціалізація дисплею T-Display ESP32
     tft.init();
-    tft.setRotation(1); // Rotate the screen 90 degrees
-    tft.fillScreen(TFT_BLACK); // Fill the display with black color
+    tft.setRotation(1); // Повертаємо екран на 90 градусів
+    tft.fillScreen(TFT_BLACK); // Заповнюємо екран чорним кольором
 
-    fetchWeather();  // Get the initial weather data
+    fetchWeather();  // Отримуємо початкові дані погоди
 }
 
 void loop() {
     unsigned long currentMillis = millis();
-    if (currentMillis - lastWeatherUpdate >= weatherUpdateInterval) {  // If 5 minutes have passed
-        fetchWeather();  // Get the new weather data
-        lastWeatherUpdate = currentMillis;  // Update the time of the last weather update
+    if (currentMillis - lastWeatherUpdate >= weatherUpdateInterval) {  // Якщо пройшло 5 хвилин
+        fetchWeather();  // Отримуємо нові дані про погоду
+        lastWeatherUpdate = currentMillis;  // Оновлюємо час останнього оновлення погоди
     }
 
-    displayDataOnTFT();  // Display the data on the T-Display ESP32 display
-    delay(1000);  // Delay for 1 second
+    displayDataOnTFT();  // Виводимо дані на дисплей T-Display ESP32
+    delay(1000);  // Затримка 1 секунда
 }
