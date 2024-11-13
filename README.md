@@ -20,3 +20,4 @@ const String API_KEY = "тут пишемо свій API ключ";  // Вста
 #endif
 
 ![зображення](https://github.com/user-attachments/assets/cc6db58c-4567-4fef-991d-fe44f41ff372)
+![зображення](https://github.com/user-attachments/assets/40258801-92c7-4eec-a5c1-12664152df10)
