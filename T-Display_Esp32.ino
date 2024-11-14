@@ -222,49 +222,125 @@ void displayDataOnTFT() {
         }
 
         // Виведення інших метеорологічних даних
+
         if (maxTemperature != previousMaxTemperature) {
+
             tft.fillRect(0, 60, 240, 20, TFT_BLACK);
+
             tft.setCursor(0, 60);
+
             tft.setTextColor(TFT_BLUE, TFT_BLACK);
+
             tft.printf("Hi: %.0f C", maxTemperature);
+
             previousMaxTemperature = maxTemperature;
+
+        } else {
+
+            tft.setCursor(0, 60);
+
+            tft.setTextColor(TFT_BLUE, TFT_BLACK);
+
+            tft.printf("Hi: %.0f C", previousMaxTemperature);
+
         }
+
 
         if (minTemperature != previousMinTemperature) {
+
             tft.fillRect(120, 60, 120, 20, TFT_BLACK);
+
             tft.setCursor(120, 60);
+
             tft.setTextColor(TFT_RED, TFT_BLACK);
+
             tft.printf("Low: %.0f C", minTemperature);
+
             previousMinTemperature = minTemperature;
+
+        } else {
+
+            tft.setCursor(120, 60);
+
+            tft.setTextColor(TFT_RED, TFT_BLACK);
+
+            tft.printf("Low: %.0f C", previousMinTemperature);
+
         }
+
 
         if (humidity != previousHumidity) {
+
             tft.fillRect(0, 80, 240, 20, TFT_BLACK);
+
             tft.setCursor(0, 80);
+
             tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
             tft.printf("Humidity: %.0f%%", humidity);
+
             previousHumidity = humidity;
+
+        } else {
+
+            tft.setCursor(0, 80);
+
+            tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
+            tft.printf("Humidity: %.0f%%", previousHumidity);
+
         }
+
 
         if (pressure != previousPressure) {
+
             tft.fillRect(0, 100, 240, 20, TFT_BLACK);
+
             tft.setCursor(0, 100);
+
             tft.printf("Pressure: %.0f hPa", pressure);
+
             previousPressure = pressure;
+
+        } else {
+
+            tft.setCursor(0, 100);
+
+            tft.printf("Pressure: %.0f hPa", previousPressure);
+
         }
 
+
         float windSpeedKmh = windSpeed * 3.6;
+
         if (windSpeedKmh != previousWindSpeedKmh) {
+
             tft.fillRect(0, 120, 240, 20, TFT_BLACK);
+
             tft.setCursor(0, 120);
+
             tft.setTextColor(0xB7E0, TFT_BLACK);
+
             tft.printf("Wind: %.1f km/h %s", windSpeedKmh, windDirection.c_str());
+
             previousWindSpeedKmh = windSpeedKmh;
+
+        } else {
+
+            tft.setCursor(0, 120);
+
+            tft.setTextColor(0xB7E0, TFT_BLACK);
+
+            tft.printf("Wind: %.1f km/h %s", previousWindSpeedKmh, windDirection.c_str());
+
         }
+
     } else {
+
         Serial.println("Using internal timer due to lack of connection.");
+
     }
-}
+    }
 
 /**
  * Функція налаштування
