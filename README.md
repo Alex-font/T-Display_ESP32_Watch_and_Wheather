@@ -18,6 +18,7 @@ const String API_KEY = "тут пишемо свій API ключ";  // Вста
 // Отримати API ключ можна зареєструвавшись на https://openweathermap.org/
 
 #endif
+
 Перший робочтй варіант:
 ![зображення](https://github.com/user-attachments/assets/cc6db58c-4567-4fef-991d-fe44f41ff372)
 
