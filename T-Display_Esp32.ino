@@ -12,7 +12,7 @@
 TFT_eSPI tft = TFT_eSPI(); // Ініціалізація дисплею
 
 // Константи для роботи з батареєю
-const float MAX_BATTERY_VOLTAGE = 4.16;  // Максимальна напруга батареї
+const float MAX_BATTERY_VOLTAGE = 4.15;  // Максимальна напруга батареї
 const float MIN_BATTERY_VOLTAGE = 3.3;  // Мінімальна напруга батареї
 const int BATTERY_PIN = 34;             // PIN для зчитування напруги батареї
 
@@ -185,7 +185,7 @@ void displayDataOnTFT() {
             // Малювання індикатора батареї
             int barX = 160;
             int barY = 40;
-            int barWidth = 75;
+            int barWidth = 70;
             int barHeight = 15;
 
             uint16_t frameColor;
