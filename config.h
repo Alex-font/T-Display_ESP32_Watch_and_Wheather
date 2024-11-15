@@ -13,6 +13,6 @@ const String COUNTRY_CODE = "UA";  // Код країни
 // Ваш API ключ для OpenWeatherMap
 const String API_KEY = "API_KEY";  // Вставте свій API ключ
 
-// Отримати API_KEY можна отримати безкоштовно після реєстрації на https://home.openweathermap.org
+// Отримати API_KEY можна отримати безкоштовно після реєстрації на https://openweathermap.org
 
 #endif
