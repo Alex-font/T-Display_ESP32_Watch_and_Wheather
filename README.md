@@ -1,4 +1,5 @@
 # T-Display_ESP32_Whotch_and_Whether
+Файл бібліотеки config.h має знаходитись у папці з основним кодом.
 Погодна станція на базі T-Display ESP32
 
 ![зображення](https://github.com/user-attachments/assets/9b816b0e-7583-45c0-a8c2-9afc89dfbee3)
