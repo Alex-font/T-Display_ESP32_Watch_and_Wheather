@@ -17,7 +17,7 @@ const float MIN_BATTERY_VOLTAGE = 3.3;  // Мінімальна напруга �
 const int BATTERY_PIN = 34;             // PIN для зчитування напруги батареї
 
 // URL для отримання даних про погоду
-const String apiUrl = "http://api.openweathermap.org/data/2.5/weather?q=Kyiv,UA&units=metric&appid=" + String(API_KEY);
+const String apiUrl = "http://api.openweathermap.org/data/2.5/weather?q=" + CITY_NAME + "," + COUNTRY_CODE + "&units=metric&appid=" + String(API_KEY);
 
 // Змінні для збереження отриманих даних про погоду
 float currentTemperature = 0.0;    // Поточна температура
