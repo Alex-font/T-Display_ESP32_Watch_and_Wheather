@@ -1,10 +1,10 @@
 # T-Display_ESP32_Whotch_and_Whether
-
+  
 Файл бібліотеки config.h має знаходитись у папці з основним кодом.
-
-Погодна станція на базі T-Display ESP32
+  
+# Погодна станція на базі T-Display ESP32
 
 ![зображення](https://github.com/user-attachments/assets/9b816b0e-7583-45c0-a8c2-9afc89dfbee3)
 
-Розпіновка T-Display ESP32 розмір екрану 240х160 кольри BGR
+# Розпіновка T-Display ESP32 розмір екрану 240х160 кольри BGR
 ![зображення](https://github.com/user-attachments/assets/40258801-92c7-4eec-a5c1-12664152df10)
