@@ -12,12 +12,14 @@
 TFT_eSPI tft = TFT_eSPI(); // Ініціалізація дисплею
 
 // Константи для роботи з батареєю
-const float MAX_BATTERY_VOLTAGE = 4.15;  // Максимальна напруга батареї
-const float MIN_BATTERY_VOLTAGE = 3.3;  // Мінімальна напруга батареї
+const float MAX_BATTERY_VOLTAGE = 4.18;  // Максимальна напруга батареї
+const float MIN_BATTERY_VOLTAGE = 3.10;  // Мінімальна напруга батареї
 const int BATTERY_PIN = 34;             // PIN для зчитування напруги батареї
 
 // URL для отримання даних про погоду
-const String apiUrl = "http://api.openweathermap.org/data/2.5/weather?q=" + CITY_NAME + "," + COUNTRY_CODE + "&units=metric&appid=" + String(API_KEY);
+//const String apiUrl = "http://api.openweathermap.org/data/2.5/weather?q=" + CITY_NAME + "," + COUNTRY_CODE + "&units=metric&appid=" + String(API_KEY);
+const String apiUrl = "http://api.openweathermap.org/data/2.5/weather?lat=" + String(LATITUDE, 6) + "&lon=" + String(LONGITUDE, 6) + "&units=metric&appid=" + API_KEY;
+
 
 // Змінні для збереження отриманих даних про погоду
 float currentTemperature = 0.0;    // Поточна температура
@@ -47,6 +49,22 @@ float previousPressure = -999.0;
 String previousWindDirection = "Unknown";
 float previousWindSpeedKmh = -999.0;
 
+// Функція для визначення характеристики атмосферного тиску
+
+String getPressureDescription(float pressure) {
+    if (pressure < 980) {
+        return "Low";
+    } else if (pressure >= 980 && pressure < 1000) {
+        return "Normal";
+    } else if (pressure >= 1000 && pressure < 1020) {
+        return "Optimal";
+    } else if (pressure >= 1020 && pressure < 1040) {
+        return "High";
+    } else {
+        return "V.High";
+    }
+}
+
 /**
  * Функція отримання даних про погоду з OpenWeather API
  * Виконує HTTP запит та парсить отриману JSON відповідь
@@ -75,17 +93,17 @@ void fetchWeather() {
             humidity = doc["main"]["humidity"];
 
             // Визначення напрямку вітру
-            float windDeg = doc["wind"]["deg"];
-            if (windDeg >= 0 && windDeg < 45) windDirection = "North";
-            else if (windDeg >= 45 && windDeg < 90) windDirection = "East";
-            else if (windDeg >= 90 && windDeg < 135) windDirection = "S/E";
-            else if (windDeg >= 135 && windDeg < 180) windDirection = "South";
-            else if (windDeg >= 180 && windDeg < 225) windDirection = "S/W";
-            else if (windDeg >= 225 && windDeg < 270) windDirection = "West";
-            else if (windDeg >= 270 && windDeg < 315) windDirection = "N/W";
-            else windDirection = "North";
+            float windDeg = doc["wind"]["deg"]; // Отримання кута вітру
+            if (windDeg >= 245 && windDeg < 15) windDirection = "North"; // Північний
+            else if (windDeg >= 15 && windDeg < 75) windDirection = "N/E"; // Північно-східний
+            else if (windDeg >= 75 && windDeg < 105) windDirection = "East"; // Схід
+            else if (windDeg >= 105 && windDeg < 165) windDirection = "S/E"; // Південно-східний
+            else if (windDeg >= 165 && windDeg < 195) windDirection = "South"; // Південь
+            else if (windDeg >= 195 && windDeg < 255) windDirection = "S/W"; // Південно-західний
+            else if (windDeg >= 255 && windDeg < 285) windDirection = "West"; // Захід
+            else if (windDeg >= 285 && windDeg < 345) windDirection = "N/W"; // Північно-західний
         } else {
-            Serial.println("Failed to get weather data.");
+            Serial.println("Failed to get weather data."); // Виведення повідомлення про помилку
         }
 
         http.end();
@@ -151,7 +169,7 @@ void displayDataOnTFT() {
 
         tft.setCursor(140, 0);
         tft.setTextColor(TFT_MAGENTA, TFT_BLACK);
-        tft.printf("%02d/%02d/%02d\n", timeinfo.tm_mday, timeinfo.tm_mon + 1, (timeinfo.tm_year + 1900) % 100);
+        tft.printf("%02d.%02d.%02d\n", timeinfo.tm_mday, timeinfo.tm_mon + 1, (timeinfo.tm_year + 1900) % 100);
 
         // Оновлення даних про батарею кожні 5 секунд
         if (millis() - lastBatteryUpdate >= batteryUpdateInterval) {
@@ -160,25 +178,25 @@ void displayDataOnTFT() {
 
             // Оновлення температури та напруги батареї
             if (currentTemperature != previousTemperature) {
-                tft.fillRect(0, 20, 240, 20, TFT_BLACK);
+                tft.fillRect(0, 20, 120, 20, TFT_BLACK);
                 tft.setCursor(0, 20);
-                tft.setTextColor(TFT_GREEN, TFT_BLACK);
-                tft.printf("Temp:  %.0f C", currentTemperature);
+                tft.setTextColor(TFT_RED, TFT_BLACK);
+                tft.printf("Temp  %.0f C", currentTemperature);
                 previousTemperature = currentTemperature; // Оновлюємо попереднє значення
             }
             if (voltage != previousVoltage) {
                 tft.setCursor(160, 20);
                 tft.setTextColor(TFT_OLIVE, TFT_BLACK);
-                tft.printf("B:%.1fV", voltage);
+                tft.printf("V:%.1fV", voltage);
                 previousVoltage = voltage; // Оновлюємо попереднє значення
             }
 
             // Оновлення відчутної температури
             if (feelsLikeTemperature != previousFeelsLikeTemperature) {
-                tft.fillRect(0, 40, 240, 20, TFT_BLACK);
+                tft.fillRect(0, 40, 120, 20, TFT_BLACK);
                 tft.setCursor(0, 40);
                 tft.setTextColor(0xFFE0, TFT_BLACK);
-                tft.printf("Feels: %.0f C", feelsLikeTemperature);
+                tft.printf("Feels %.0f C", feelsLikeTemperature);
                 previousFeelsLikeTemperature = feelsLikeTemperature; // Оновлюємо попереднє значення
             }
 
@@ -189,12 +207,12 @@ void displayDataOnTFT() {
             int barHeight = 15;
 
             uint16_t frameColor;
-            if (percentage >= 99) {
-                frameColor = TFT_RED;
-            } else if (percentage >= 20) {
-                frameColor = TFT_WHITE;
-            } else {
+            if (percentage >= 98) {
                 frameColor = TFT_BLUE;
+            } else if (percentage >= 20) {
+                frameColor = TFT_GREEN;
+            } else {
+                frameColor = TFT_RED;
             }
 
             tft.drawRect(barX, barY, barWidth, barHeight, frameColor);
@@ -210,7 +228,6 @@ void displayDataOnTFT() {
                 fillColor = TFT_RED;
             }
             tft.fillRect(barX + 2, barY + 2, fillWidth, barHeight - 4, fillColor);
-
             previousBatteryPercentage = percentage; // Оновлюємо попереднє значення
             lastBatteryUpdate = millis();
         }
@@ -222,123 +239,69 @@ void displayDataOnTFT() {
         }
 
         // Виведення інших метеорологічних даних
-
         if (maxTemperature != previousMaxTemperature) {
-
-            tft.fillRect(0, 60, 240, 20, TFT_BLACK);
-
+            tft.fillRect(0, 60, 120, 20, TFT_BLACK);
             tft.setCursor(0, 60);
-
-            tft.setTextColor(TFT_BLUE, TFT_BLACK);
-
-            tft.printf("Hi: %.0f C", maxTemperature);
-
+            tft.setTextColor(0xFD20, TFT_BLACK);
+            tft.printf("Hi %.0f C", maxTemperature);
             previousMaxTemperature = maxTemperature;
-
         } else {
-
             tft.setCursor(0, 60);
-
-            tft.setTextColor(TFT_BLUE, TFT_BLACK);
-
-            tft.printf("Hi: %.0f C", previousMaxTemperature);
-
+            tft.setTextColor(0xFD20, TFT_BLACK);
+            tft.printf("Hi %.0f C", previousMaxTemperature);
         }
-
 
         if (minTemperature != previousMinTemperature) {
-
             tft.fillRect(120, 60, 120, 20, TFT_BLACK);
-
             tft.setCursor(120, 60);
-
-            tft.setTextColor(TFT_RED, TFT_BLACK);
-
-            tft.printf("Low: %.0f C", minTemperature);
-
+            tft.setTextColor(0x7FFF, TFT_BLACK);
+            tft.printf("Low %.0f C", minTemperature);
             previousMinTemperature = minTemperature;
-
         } else {
-
             tft.setCursor(120, 60);
-
-            tft.setTextColor(TFT_RED, TFT_BLACK);
-
-            tft.printf("Low: %.0f C", previousMinTemperature);
-
+            tft.setTextColor(0x7FFF, TFT_BLACK);
+            tft.printf("Low %.0f C", previousMinTemperature);
         }
-
 
         if (humidity != previousHumidity) {
-
-            tft.fillRect(0, 80, 240, 20, TFT_BLACK);
-
-            tft.setCursor(0, 80);
-
-            tft.setTextColor(TFT_WHITE, TFT_BLACK);
-
-            tft.printf("Humidity: %.0f%%", humidity);
-
+            tft.fillRect(0, 100, 240, 20, TFT_BLACK);
+            tft.setCursor(0, 100);
+            tft.setTextColor(0xFF0000FF, TFT_BLACK);
+            tft.printf("Humidity %.0f%%", humidity);
             previousHumidity = humidity;
-
         } else {
-
-            tft.setCursor(0, 80);
-
-            tft.setTextColor(TFT_WHITE, TFT_BLACK);
-
-            tft.printf("Humidity: %.0f%%", previousHumidity);
-
+            tft.setCursor(0, 100);
+            tft.setTextColor(0xFF0000FF, TFT_BLACK);
+            tft.printf("Humidity %.0f%%", previousHumidity);
         }
-
 
         if (pressure != previousPressure) {
-
-            tft.fillRect(0, 100, 240, 20, TFT_BLACK);
-
-            tft.setCursor(0, 100);
-
-            tft.printf("Pressure: %.0f hPa", pressure);
-
+            tft.fillRect(0, 80, 240, 20, TFT_BLACK);
+            tft.setCursor(0, 80);
+            tft.setTextColor(0xB7E0, TFT_BLACK);
+            tft.printf("Pressure %.0f %s", pressure, getPressureDescription(pressure).c_str());
             previousPressure = pressure;
-
         } else {
-
-            tft.setCursor(0, 100);
-
-            tft.printf("Pressure: %.0f hPa", previousPressure);
-
+            tft.setCursor(0, 80);
+            tft.setTextColor(0xB7E0, TFT_BLACK);
+            tft.printf("Pressure %.0f", previousPressure, getPressureDescription(pressure).c_str());
         }
 
-
         float windSpeedKmh = windSpeed * 3.6;
-
         if (windSpeedKmh != previousWindSpeedKmh) {
-
             tft.fillRect(0, 120, 240, 20, TFT_BLACK);
-
             tft.setCursor(0, 120);
-
-            tft.setTextColor(0xB7E0, TFT_BLACK);
-
-            tft.printf("Wind: %.1f km/h %s", windSpeedKmh, windDirection.c_str());
-
+            tft.setTextColor(0x00FF00, TFT_BLACK);
+            tft.printf("Wind %.1f km/h %s", windSpeedKmh, windDirection.c_str());
             previousWindSpeedKmh = windSpeedKmh;
-
         } else {
-
             tft.setCursor(0, 120);
-
-            tft.setTextColor(0xB7E0, TFT_BLACK);
-
-            tft.printf("Wind: %.1f km/h %s", previousWindSpeedKmh, windDirection.c_str());
-
+            tft.setTextColor(0x00FF00, TFT_BLACK);
+            tft.printf("Wind %.1f km/h %s", previousWindSpeedKmh, windDirection.c_str());
         }
 
     } else {
-
         Serial.println("Using internal timer due to lack of connection.");
-
     }
     }
 
@@ -356,7 +319,6 @@ void setup() {
  Serial.print(".");
     }
     Serial.println(" WiFi connected.");
-
     configTime(2 * 3600, 0, "pool.ntp.org", "time.nist.gov");
 
     struct tm timeinfo;
