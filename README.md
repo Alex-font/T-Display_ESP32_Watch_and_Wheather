@@ -1,4 +1,4 @@
-# T-Display_ESP32_Whotch_and_Whether
+# T-Display_ESP32_Watch_and_Wheather
   
 Файл бібліотеки config.h має знаходитись у папці з основним кодом.
   
