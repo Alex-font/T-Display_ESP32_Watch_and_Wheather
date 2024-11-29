@@ -158,7 +158,7 @@ uint16_t getVoltageTextColor(float voltage) {
   }
 }
 
-  /**
+/**
  * Функція виведення всіх даних на дисплей
  * Відображає:
  * - Час та дату
@@ -166,200 +166,193 @@ uint16_t getVoltageTextColor(float voltage) {
  * - Відчутну температуру та індикатор заряду
  * - Інші метеорологічні дані
  */
-  void displayDataOnTFT() {
-    struct tm timeinfo;
-    if (getLocalTime(&timeinfo)) {
-      const char* daysOfWeek[] = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
-      int dayIndex = (timeinfo.tm_wday + 6) % 7;
+void displayDataOnTFT() {
+  struct tm timeinfo;
+  if (getLocalTime(&timeinfo)) {
+    const char* daysOfWeek[] = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+    int dayIndex = (timeinfo.tm_wday + 6) % 7;
 
-      // Оновлення годинника кожну секунду
-      tft.setCursor(0, 0);
-      tft.setTextColor(TFT_MAGENTA, TFT_BLACK);
-      tft.setTextSize(2);  // Задаємо розмір шрифта 2
-      tft.printf("%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+    // Оновлення годинника кожну секунду
+    tft.setCursor(0, 0);
+    tft.setTextColor(TFT_MAGENTA, TFT_BLACK);
+    tft.setTextSize(2);  // Задаємо розмір шрифта 2
+    tft.printf("%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
 
-      tft.setCursor(100, 0);
-      tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.printf("%s", daysOfWeek[dayIndex]);
+    tft.setCursor(100, 0);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.printf("%s", daysOfWeek[dayIndex]);
 
-      tft.setCursor(140, 0);
-      tft.setTextColor(TFT_MAGENTA, TFT_BLACK);
-      tft.printf("%02d.%02d.%02d\n", timeinfo.tm_mday, timeinfo.tm_mon + 1, (timeinfo.tm_year + 1900) % 100);
+    tft.setCursor(140, 0);
+    tft.setTextColor(TFT_MAGENTA, TFT_BLACK);
+    tft.printf("%02d.%02d.%02d\n", timeinfo.tm_mday, timeinfo.tm_mon + 1, (timeinfo.tm_year + 1900) % 100);
 
-      // Оновлення даних про батарею кожні 5 секунд
-      if (millis() - lastBatteryUpdate >= batteryUpdateInterval) {
-        float voltage = getBatteryVoltage();
-        int percentage = getBatteryPercentage(voltage);
+    // Оновлення даних про батарею кожні 5 секунд
+    if (millis() - lastBatteryUpdate >= batteryUpdateInterval) {
+      float voltage = getBatteryVoltage();
+      int percentage = getBatteryPercentage(voltage);
 
-        // Оновлення температури та напруги батареї
-        if (currentTemperature != previousTemperature) {
-          tft.fillRect(0, 20, 120, 20, TFT_BLACK);
-          tft.setCursor(0, 20);
-          tft.setTextColor(TFT_RED, TFT_BLACK);
-          tft.printf("Temp  %.0f C", currentTemperature);
-          previousTemperature = currentTemperature;  // Оновлюємо попереднє значення
-        }
-        if (voltage != previousVoltage) {
+      // Оновлення температури та напруги батареї
+      if (currentTemperature != previousTemperature) {
+        tft.fillRect(0, 20, 120, 20, TFT_BLACK);
+        tft.setCursor(0, 20);
+        tft.setTextColor(TFT_RED, TFT_BLACK);
+        tft.printf("Temp  %.0f C", currentTemperature);
+        previousTemperature = currentTemperature;  // Оновлюємо попереднє значення
+      }
+      if (voltage != previousVoltage) {
         // Оновлення кольору тексту залежно від напруги батареї
-          uint16_t textColor = getVoltageTextColor(voltage);
-          tft.setCursor(160, 20);
-          tft.setTextColor(textColor, TFT_BLACK);
-          tft.printf("V:%.1fV", voltage);
-          previousVoltage = voltage;  // Оновлюємо попереднє значення
-        }
-
-        // Оновлення відчутної температури
-        if (feelsLikeTemperature != previousFeelsLikeTemperature) {
-          tft.fillRect(0, 40, 120, 20, TFT_BLACK);
-          tft.setCursor(0, 40);
-          tft.setTextColor(0xFFE0, TFT_BLACK);
-          tft.printf("Feels %.0f C", feelsLikeTemperature);
-          previousFeelsLikeTemperature = feelsLikeTemperature;  // Оновлюємо попереднє значення
-        }
-
-        // Малювання індикатора батареї
-        int barX = 160;
-        int barY = 40;
-        int barWidth = 70;
-        int barHeight = 15;
-
-        uint16_t frameColor;
-        if (percentage >= 98) {
-          frameColor = TFT_BLUE;
-        } else if (percentage >= 20) {
-          frameColor = TFT_GREEN;
-        } else {
-          frameColor = TFT_RED;
-        }
-
-        tft.drawRect(barX, barY, barWidth, barHeight, frameColor);
-        tft.fillRect(barX + barWidth, barY + 4, 3, 7, frameColor);
-
-        int fillWidth = (percentage * (barWidth - 4)) / 100;
-        uint16_t fillColor;
-        if (percentage >= 98) {
-          fillColor = TFT_GREEN;
-        } else if (percentage >= 20) {
-          fillColor = TFT_GREEN;
-        } else {
-          fillColor = TFT_RED;
-        }
-        tft.fillRect(barX + 2, barY + 2, fillWidth, barHeight - 4, fillColor);
-        previousBatteryPercentage = percentage;  // Оновлюємо попереднє значення
-        lastBatteryUpdate = millis();
+        uint16_t textColor = getVoltageTextColor(voltage);
+        tft.setCursor(160, 20);
+        tft.setTextColor(textColor, TFT_BLACK);
+        tft.printf("V:%.1fV", voltage);
+        previousVoltage = voltage;  // Оновлюємо попереднє значення
       }
 
-      // Оновлення погодних даних кожні 5 хвилин
-      if (millis() - lastWeatherUpdate >= weatherUpdateInterval) {
-        fetchWeather();
-        lastWeatherUpdate = millis();
+      // Оновлення відчутної температури
+      if (feelsLikeTemperature != previousFeelsLikeTemperature) {
+        tft.fillRect(0, 40, 120, 20, TFT_BLACK);
+        tft.setCursor(0, 40);
+        tft.setTextColor(0xFFE0, TFT_BLACK);
+        tft.printf("Feels %.0f C", feelsLikeTemperature);
+        previousFeelsLikeTemperature = feelsLikeTemperature;  // Оновлюємо попереднє значення
       }
 
-      // Виведення інших метеорологічних даних
-      if (maxTemperature != previousMaxTemperature) {
-        tft.fillRect(0, 60, 120, 20, TFT_BLACK);
-        tft.setCursor(0, 60);
-        tft.setTextColor(0xFD20, TFT_BLACK);
-        tft.printf("Hi %.0f C", maxTemperature);
-        previousMaxTemperature = maxTemperature;
-      } else {
-        tft.setCursor(0, 60);
-        tft.setTextColor(0xFD20, TFT_BLACK);
-        tft.printf("Hi %.0f C", previousMaxTemperature);
-      }
+      // Малювання індикатора батареї
+      int barX = 160;
+      int barY = 40;
+      int barWidth = 70;
+      int barHeight = 15;
 
-      if (minTemperature != previousMinTemperature) {
-        tft.fillRect(120, 60, 120, 20, TFT_BLACK);
-        tft.setCursor(120, 60);
-        tft.setTextColor(0x7FFF, TFT_BLACK);
-        tft.printf("Low %.0f C", minTemperature);
-        previousMinTemperature = minTemperature;
-      } else {
-        tft.setCursor(120, 60);
-        tft.setTextColor(0x7FFF, TFT_BLACK);
-        tft.printf("Low %.0f C", previousMinTemperature);
-      }
+      uint16_t frameColor = (percentage >= 98) ? TFT_BLUE : (percentage >= 20) ? TFT_GREEN
+                                                                               : TFT_RED;
 
-      if (humidity != previousHumidity) {
-        tft.fillRect(0, 100, 240, 20, TFT_BLACK);
-        tft.setCursor(0, 100);
-        tft.setTextColor(0xFF0000FF, TFT_BLACK);
-        tft.printf("Humidity %.0f%%", humidity);
-        previousHumidity = humidity;
-      } else {
-        tft.setCursor(0, 100);
-        tft.setTextColor(0xFF0000FF, TFT_BLACK);
-        tft.printf("Humidity %.0f%%", previousHumidity);
-      }
+      // Очищення попереднього рівня батареї
+      tft.fillRect(barX + 2, barY + 2, barWidth - 4, barHeight - 4, TFT_BLACK);  // Очищаємо старе заповнення
 
-      if (pressure != previousPressure) {
-        tft.fillRect(0, 80, 240, 20, TFT_BLACK);
-        tft.setCursor(0, 80);
-        tft.setTextColor(0xB7E0, TFT_BLACK);
-        tft.printf("Pressure %.0f %s", pressure, getPressureDescription(pressure).c_str());
-        previousPressure = pressure;
-      } else {
-        tft.setCursor(0, 80);
-        tft.setTextColor(0xB7E0, TFT_BLACK);
-        tft.printf("Pressure %.0f", previousPressure, getPressureDescription(pressure).c_str());
-      }
+      // Малюємо нову рамку
+      tft.drawRect(barX, barY, barWidth, barHeight, frameColor);
+      tft.fillRect(barX + barWidth, barY + 4, 3, 7, frameColor);
 
-      float windSpeedKmh = windSpeed * 3.6;
-      if (windSpeedKmh != previousWindSpeedKmh) {
-        tft.fillRect(0, 120, 240, 20, TFT_BLACK);
-        tft.setCursor(0, 120);
-        tft.setTextColor(0x00FF00, TFT_BLACK);
-        tft.printf("Wind %.1f km/h %s", windSpeedKmh, windDirection.c_str());
-        previousWindSpeedKmh = windSpeedKmh;
-      } else {
-        tft.setCursor(0, 120);
-        tft.setTextColor(0x00FF00, TFT_BLACK);
-        tft.printf("Wind %.1f km/h %s", previousWindSpeedKmh, windDirection.c_str());
-      }
-
-    } else {
-      Serial.println("Using internal timer due to lack of connection.");
+      // Розрахунок нового рівня заповнення
+      int fillWidth = (percentage * (barWidth - 4)) / 100;
+      uint16_t fillColor = (percentage >= 98) ? TFT_GREEN : (percentage >= 20) ? TFT_GREEN
+                                                                               : TFT_RED;
+      tft.fillRect(barX + 2, barY + 2, fillWidth, barHeight - 4, fillColor);
+      previousBatteryPercentage = percentage;
+      lastBatteryUpdate = millis();
     }
-  }
 
-  /**
+    // Оновлення погодних даних кожні 5 хвилин
+    if (millis() - lastWeatherUpdate >= weatherUpdateInterval) {
+      fetchWeather();
+      lastWeatherUpdate = millis();
+    }
+
+    // Виведення інших метеорологічних даних
+    if (maxTemperature != previousMaxTemperature) {
+      tft.fillRect(0, 60, 120, 20, TFT_BLACK);
+      tft.setCursor(0, 60);
+      tft.setTextColor(0xFD20, TFT_BLACK);
+      tft.printf("Hi %.0f C", maxTemperature);
+      previousMaxTemperature = maxTemperature;
+    } else {
+      tft.setCursor(0, 60);
+      tft.setTextColor(0xFD20, TFT_BLACK);
+      tft.printf("Hi %.0f C", previousMaxTemperature);
+    }
+
+    if (minTemperature != previousMinTemperature) {
+      tft.fillRect(120, 60, 120, 20, TFT_BLACK);
+      tft.setCursor(120, 60);
+      tft.setTextColor(0x7FFF, TFT_BLACK);
+      tft.printf("Low %.0f C", minTemperature);
+      previousMinTemperature = minTemperature;
+    } else {
+      tft.setCursor(120, 60);
+      tft.setTextColor(0x7FFF, TFT_BLACK);
+      tft.printf("Low %.0f C", previousMinTemperature);
+    }
+
+    if (humidity != previousHumidity) {
+      tft.fillRect(0, 100, 240, 20, TFT_BLACK);
+      tft.setCursor(0, 100);
+      tft.setTextColor(0xFF0000FF, TFT_BLACK);
+      tft.printf("Humidity %.0f%%", humidity);
+      previousHumidity = humidity;
+    } else {
+      tft.setCursor(0, 100);
+      tft.setTextColor(0xFF0000FF, TFT_BLACK);
+      tft.printf("Humidity %.0f%%", previousHumidity);
+    }
+
+    if (pressure != previousPressure) {
+      tft.fillRect(0, 80, 240, 20, TFT_BLACK);
+      tft.setCursor(0, 80);
+      tft.setTextColor(0xB7E0, TFT_BLACK);
+      tft.printf("Pressure %.0f %s", pressure, getPressureDescription(pressure).c_str());
+      previousPressure = pressure;
+    } else {
+      tft.setCursor(0, 80);
+      tft.setTextColor(0xB7E0, TFT_BLACK);
+      tft.printf("Pressure %.0f", previousPressure, getPressureDescription(pressure).c_str());
+    }
+
+    float windSpeedKmh = windSpeed * 3.6;
+    if (windSpeedKmh != previousWindSpeedKmh) {
+      tft.fillRect(0, 120, 260, 20, TFT_BLACK);
+      tft.setCursor(0, 120);
+      tft.setTextColor(0x00FF00, TFT_BLACK);
+      tft.printf("Wind %.1f km/h %s", windSpeedKmh, windDirection.c_str());
+      previousWindSpeedKmh = windSpeedKmh;
+    } else {
+      tft.setCursor(0, 120);
+      tft.setTextColor(0x00FF00, TFT_BLACK);
+      tft.printf("Wind %.1f km/h %s", previousWindSpeedKmh, windDirection.c_str());
+    }
+
+  } else {
+    Serial.println("Using internal timer due to lack of connection.");
+  }
+}
+
+/**
  * Функція налаштування
  * Виконується один раз при старті
  * Ініціалізує всі компоненти та підключення
  */
-  void setup() {
-    Serial.begin(115200);
-    WiFi.begin(ssid, password);
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
 
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
-    }
-    Serial.println(" WiFi connected.");
-    configTime(2 * 3600, 0, "pool.ntp.org", "time.nist.gov");
-
-    struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
-      Serial.println("Failed to get time from the internet");
-      return;
-    }
-    Serial.println("Time synchronized with NTP server");
-
-    tft.init();
-    tft.setRotation(1);
-    tft.fillScreen(TFT_BLACK);  // Налаштування АЦП для вимірювання напруги батареї
-    analogReadResolution(12);
-    analogSetAttenuation(ADC_11db);
-
-    fetchWeather();
-    displayDataOnTFT();  // Відображення початкових даних на дисплеї
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
   }
+  Serial.println(" WiFi connected.");
+  configTime(2 * 3600, 0, "pool.ntp.org", "time.nist.gov");
 
-  /**
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to get time from the internet");
+    return;
+  }
+  Serial.println("Time synchronized with NTP server");
+
+  tft.init();
+  tft.setRotation(1);
+  tft.fillScreen(TFT_BLACK);  // Налаштування АЦП для вимірювання напруги батареї
+  analogReadResolution(12);
+  analogSetAttenuation(ADC_11db);
+
+  fetchWeather();
+  displayDataOnTFT();  // Відображення початкових даних на дисплеї
+}
+
+/**
  * Головний цикл програми
  * Оновлює дисплей кожну секунду
  */
-  void loop() {
-    displayDataOnTFT();
-    delay(1000);
-  }
+void loop() {
+  displayDataOnTFT();
+  delay(1000);
+}
